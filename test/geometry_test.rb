@@ -1,4 +1,3 @@
-
 require 'test_helper'
 require 'geometry'
 
@@ -44,17 +43,84 @@ class GeometryTest < Minitest::Test
                     distance_point_to_point3d(Point3d.new(-222,-333,-444),Point3d.new(-2,-5,-6)),0.0001)
   end
 
-  def test_distance_line_to_point2d_simple
-    assert_equal(0, distance_line_to_point2d(Point.new(0, 0), Point.new(2, 2), Point.new(0, 0)))
+
+  def test_directing_vector3d1
+    assert_equal([2.0, 1.0, 2.0],directing_vector3d('(x-3)/2=(y-1)/1=(z+1)/2'))
   end
 
-  def test_distance_line_to_point2d_normal
-    assert_in_delta(1.8343409898251712, distance_line_to_point2d(Point.new(-7, 3), Point.new(6, 11), Point.new(3, 7)), 0.0001)
+  def test_directing_vector3d
+    assert_equal([5.0, 3.0, 2.0],directing_vector3d('(x-5)/5=(y+15)/3=(z-20)/2'))
+    assert_equal( [26.0, -15.0, 51.0],directing_vector3d('(x-0)/26=(y+300)/*(-15)=(z-200)/51'))
+    assert_equal([0.0, 0.0, 1.0],directing_vector3d('(x-0)/0=(y-0)/0=(z-20)/1'))
+    assert_equal([0.0,0.0,1.0],directing_vector3d('(z-20)/1'))
   end
 
-  def test_distance_line_to_point2d_big
-    assert_in_delta(241.00095342953614, distance_line_to_point2d(Point.new(127, 591), Point.new(-503, -202), Point.new(5, 50)), 0.0001)
+  def test_point_on_the_line3d
+    assert_equal([3.0, 1.0, -1.0],point_on_the_line3d('(x-3)/2=(y-1)/1=(z+1)/2'))
+    assert_equal([5.0, -15.0, 20.0],point_on_the_line3d('(x-5)/5=(y+15)/3=(z-20)/2'))
+    assert_equal( [0.0, -300.0, 200.0],point_on_the_line3d('(x-0)/26=(y+300)/*(-15)=(z-200)/51'))
+    assert_equal([0.0, 0.0, 20.0],point_on_the_line3d('(x-0)/0=(y-0)/0=(z-20)/1'))
+    assert_equal([0.0,0.0,20.0],point_on_the_line3d('(z-20)/1'))
+    assert_equal([0.0, 0.0, 20.0],point_on_the_line3d('x/0=y/0=(z-20)/1'))
   end
+
+  def test_distance_point_to_line3d
+    assert_in_delta(5,distance_point_to_line3d(Point3d.new(0,2,3),'(x-3)/2=(y-1)/1=(z+1)/2'),0.00001)
+    assert_in_delta(22.2036033,distance_point_to_line3d(Point3d.new(1,-17,-5),'(x-5)/5=(y+15)/3=(z-20)/2'),0.00001)
+    assert_in_delta(256.782523588213,distance_point_to_line3d(Point3d.new(-50,20,-50),'(x-0)/26=(y+300)/*(-15)=(z-200)/51'),0.00001)
+    assert_in_delta(0,distance_point_to_line3d(Point3d.new(0,0,2),'(x-0)/0=(y-0)/0=(z-20)/1'),0.000001)
+    assert_in_delta(0,distance_point_to_line3d(Point3d.new(0,0,2),'(z-20)/1'),0.00001)
+    assert_in_delta(0,distance_point_to_line3d(Point3d.new(0,0,2),'y-/0=(z-20)/1'),0.0000001)
+  end
+
+
+  def test_distance_line_on_point
+    assert_equal(0, distance_point_line2d(Point.new(0, 0), Point.new(2, 2), Point.new(0, 0)))
+  end
+
+  def test_distance_point_close_from_line
+    assert_in_delta(1.8343409898251712, distance_point_line2d(Point.new(-7, 3), Point.new(6, 11), Point.new(3, 7)), 0.0001)
+  end
+
+  def test_distance_point_far_from_line
+    assert_in_delta(241.00095342953614, distance_point_line2d(Point.new(127, 591), Point.new(-503, -202), Point.new(5, 50)), 0.0001)
+  end
+
+  def test_init_line2d_with_same_points
+    assert_raises ArgumentError  do
+      Line2dCanon.new(Point.new(0,0),Point.new(0,0))
+    end
+  end
+
+  def test_init_line2d_with_same_x_arguments
+    assert_raises ArgumentError  do
+      Line2dCanon.new(Point.new(0,5),Point.new(0,10))
+    end
+  end
+
+  def test_init_slope_line2d_with_points_simple
+    assert_equal(0,Line2dCanon.new(Point.new(0,0),Point.new(1,0)).slope)
+  end
+
+  def test_init_free_term_line2d_with_points_simple
+    assert_equal(0,Line2dCanon.new(Point.new(0,0),Point.new(1,0)).free_term)
+  end
+
+  def test_init_slope_line2d_with_points_hard
+    assert_in_delta(0.333333333,Line2dCanon.new(Point.new(0,3),Point.new(3,4)).slope,0.0001)
+  end
+
+  def test_init_free_term_line2d_with_points_hard
+    assert_in_delta(1.333333333,Line2dCanon.new(Point.new(2,2),Point.new(5,3)).free_term,0.0001)
+  end
+
+  def test_method_pointis_on_line_returns_true_simple
+    assert_equal(true, Line2dCanon.new(Point.new(0,0),Point.new(1,0)).point_is_on_line?(Point.new(500,0)))
+  end
+
+  def test_method_pointis_on_line_returns_false_simple
+    assert_equal(false, Line2dCanon.new(Point.new(0,0),Point.new(1,0)).point_is_on_line?(Point.new(1,1)))
+  end
+
 
 end
-
